@@ -23,8 +23,32 @@ Built by **BeeCode Team** 🐝, *Lantern* combines Microsoft Azure’s AI capabi
 - Document Generator: Will auto-generate preliminary legal forms based on user data
 
 
+## Architecture 🏗️
+
+![Architecture](./assets/architcture.png)
+
+1. User Interaction
+    * LLM Assistant (Azure OpenAI) provides plain-language legal guidance and checks for heirs’ property status.
+    * Form Assistance helps users complete legal forms.
+    * Azure Blob Storage + FastAPI + Azure SQL handle secure storage of forms and user metadata (contact info, document URL).
+
+2. AI Risk Engine
+    * Risk AI Agent evaluates property vulnerability using:
+        * A Rule-Based Model (legal logic).
+        * An Analytics Model (data-driven predictions).
+
+3. Internal Platform
+    * Planner Integration + Chatbot enable staff to validate and contact users.
+    * Power BI Dashboard displays risk insights and prioritizes outreach.
+    * Feedback Loop improves model accuracy and legal triage over time.
+
+4. Human Validation & Document Generation
+    * Verification Interface: Ensures only legitimate cases are escalated, with human-in-the-loop governance.
+    * Auto Document Generator: Produces draft legal documents using collected data, ready for staff or legal review.
+
+
 ## Data Flow 🔄 
-1. User submits a request or inquiry via form/chatbot  
+1. User submits a request or inquiry via chatbot  
 2. AI assistant explains the situation and helps to fill the form using AI
 3. Staff verifies legitimate cases, preventing fraud or misuse  
 4. Dashboard highlights high-risk parcels and guiding outreach strategies 
