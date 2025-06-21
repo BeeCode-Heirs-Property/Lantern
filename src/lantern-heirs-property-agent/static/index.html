@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heirs Help - Chat de Ayuda</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-gradient-to-r from-blue-50 to-white min-h-screen flex flex-col">
+
+  <!-- Navbar (igual que home) -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-700">Lantern: Heirs Help</h1>
+      <nav>
+        <a href="/" class="text-blue-600 hover:text-blue-800 font-medium">Back to Home</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor principal del chat -->
+  <div class="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-6">
+
+    <!-- Título del chat -->
+    <div class="text-center mb-6">
+      <h2 class="text-3xl font-extrabold text-blue-800 mb-2">Heirs’ Property Assistant</h2>
+      <p class="text-gray-700">Get personalized help for your Heirs Property case in Georgia</p>
+    </div>
+
+    <!-- Contenedor de mensajes con altura fija -->
+    <div id="chat" class="flex flex-col space-y-3 overflow-y-auto bg-white rounded-lg shadow-md p-6 mb-4 h-96">
+      <!-- Los mensajes aparecerán aquí -->
+    </div>
+
+    <!-- Área de entrada (fija en la parte inferior) -->
+    <div id="input-area" class="flex items-center bg-white rounded-lg shadow-md p-4 border border-gray-200">
+      <button id="mic-btn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 mr-3 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200" disabled>
+        🎤
+      </button>
+      <input
+        type="text"
+        id="msg-input"
+        placeholder="Type your message about heirs property…"
+        autocomplete="off"
+        class="flex-1 border border-gray-300 rounded-md p-3 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
+      <button id="send-btn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition duration-200" disabled>
+        Send
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer (igual que home) -->
+  <footer class="bg-white border-t py-4 mt-6">
+    <div class="max-w-4xl mx-auto text-center text-gray-500">
+      © 2025 Heirs Help. All rights reserved.
+      Built with 💛 by <a href="https://beecode.com">BeeCode</a> 🐝
+    </div>
+  </footer>
+
+  <script>
+    // Selectores de DOM
+    const chatEl = document.getElementById('chat');
+    const inputEl = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+    const micBtn = document.getElementById('mic-btn');
+
+    // Estado del formulario en curso
+    let currentForm = {};
+    let lastQuestion = '';
+
+    // Conexión WebSocket
+    const ws = new WebSocket(`ws://${location.host}/ws/chat`);
+    ws.addEventListener('open', () => {
+      // Mensaje de bienvenida con estilo
+      appendMessage('Hello! I’m your assistant for Heirs Property cases in Georgia. How can I help you today?', 'bot');
+      micBtn.disabled = false;
+      // Permitimos envío manual tras la conexión
+      sendBtn.disabled = inputEl.value.trim() === '';
+    });
+
+    ws.addEventListener('message', evt => {
+      let data;
+      // 1) Parseo seguro
+      try {
+        data = JSON.parse(evt.data);
+      } catch (err) {
+        console.error('Mensaje no es JSON válido:', evt.data);
+        return;
+      }
+
+      // 2) Si viene texto, lo mostramos
+      if (data.message) {
+        appendMessage(data.message, 'bot');
+        lastQuestion = data.message;
+      }
+
+      // 3) Si viene pdf_url, mostramos el enlace
+      if (data.pdf_url) {
+        const pdfDiv = document.createElement('div');
+        pdfDiv.className = 'self-start bg-green-100 border border-green-300 rounded-lg p-4 max-w-[80%] mt-2';
+
+        const pdfLink = document.createElement('a');
+        pdfLink.href = data.pdf_url;
+        pdfLink.textContent = "📄 Descargar PDF del formulario";
+        pdfLink.className = "text-green-700 font-semibold hover:text-green-800 underline";
+        pdfLink.target = "_blank";
+
+        pdfDiv.appendChild(pdfLink);
+        chatEl.appendChild(pdfDiv);
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
+
+      // 4) Actualizamos el formulario si llegó
+      if (data.form_data) {
+        currentForm = data.form_data;
+      }
+    });
+
+    ws.addEventListener('close', () => {
+      appendMessage('⚠️ Conexión cerrada. Por favor, recarga la página.', 'bot');
+      sendBtn.disabled = micBtn.disabled = true;
+    });
+
+    ws.addEventListener('error', (err) => {
+      console.error('WS error:', err);
+      appendMessage('❌ Error de conexión. Verificando...', 'bot');
+    });
+
+    // Habilitar botón Enviar cuando haya texto
+    inputEl.addEventListener('input', () => {
+      sendBtn.disabled = inputEl.value.trim() === '';
+    });
+
+    // Enviar mensaje al servidor
+    function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      appendMessage(text, 'user');
+
+      // Enviamos currentForm bajo la clave esperada por el backend
+      ws.send(JSON.stringify({
+        content: text,
+        current_form: currentForm,
+        last_question: lastQuestion
+      }));
+
+      inputEl.value = '';
+      sendBtn.disabled = true;
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
+    });
+
+    // Añadir mensaje al chat con estilo mejorado
+    function appendMessage(text, who) {
+      const div = document.createElement('div');
+
+      if (who === 'user') {
+        div.className = 'self-end bg-blue-600 text-white px-4 py-3 rounded-lg max-w-[80%] break-words shadow-sm';
+      } else {
+        div.className = 'self-start bg-gray-100 text-gray-800 px-4 py-3 rounded-lg max-w-[80%] break-words shadow-sm border border-gray-200';
+      }
+
+      // Si es el bot, interpreta Markdown
+      if (who === 'bot') {
+        div.innerHTML = marked.parse(text);
+        // Aplicar estilos a elementos dentro del markdown
+        const links = div.querySelectorAll('a');
+        links.forEach(link => {
+          link.className = 'text-blue-600 hover:text-blue-800 underline';
+        });
+
+        const lists = div.querySelectorAll('ul, ol');
+        lists.forEach(list => {
+          list.className = 'ml-4 mt-2';
+        });
+      } else {
+        div.textContent = text;
+      }
+
+      chatEl.appendChild(div);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    // Configuración de reconocimiento de voz
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recog = new SpeechRecognition();
+      recog.lang = 'es-CO';
+      recog.interimResults = false;
+      recog.maxAlternatives = 1;
+      let listening = false;
+
+      micBtn.addEventListener('click', async () => {
+        if (!listening) {
+          try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            recog.start();
+          } catch (err) {
+            console.error('Permiso de micrófono denegado', err);
+            alert('Permiso de micrófono denegado. Por favor, permite el acceso al micrófono.');
+          }
+        } else {
+          recog.stop();
+        }
+      });
+
+      recog.addEventListener('start', () => {
+        listening = true;
+        micBtn.textContent = '🛑';
+        micBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        micBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+      });
+
+      recog.addEventListener('end', () => {
+        listening = false;
+        micBtn.textContent = '🎤';
+        micBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        micBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+      });
+
+      recog.addEventListener('result', (e) => {
+        const transcript = e.results[0][0].transcript;
+        inputEl.value = transcript;
+        sendBtn.disabled = false;
+        sendMessage();
+      });
+    } else {
+      console.warn('Web Speech API no soportada. Usa Chrome o Edge.');
+      micBtn.disabled = true;
+      micBtn.title = 'Reconocimiento de voz no disponible en este navegador';
+    }
+  </script>
+</body>
+</html>
