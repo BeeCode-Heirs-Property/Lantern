@@ -1,4 +1,4 @@
-# LANTERN: Heirs Property Agent
+# LANTERN: Heirs Property Agent 🏠⚖️
 
 An AI-powered FastAPI application that assists users in completing the Original Owner Worksheet of the Georgia Heirs Determination form. It provides a conversational interface via WebSockets, leveraging Azure OpenAI to guide users through required fields, and can automatically fill out the PDF form based on user-provided data.
 

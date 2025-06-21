@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #061A2C;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #00558c;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 2rem;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+
+    footer {
+      background-color: #061A2C;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Lantern: Heirs Help</h1>
+  </header>
+
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Support</a>
+    <a href="/cases">Open Cases</a>
+    <a href="/logout">Log Out</a>
+  </nav>
+
+  <main>
+    <h2>Power BI Report</h2>
+    <iframe title="HJDVLR" width="600" height="373.5" src="https://app.powerbi.com/view?r=eyJrIjoiMjM2YmI5MWEtZDFlYi00ZmIxLTkzYjEtZGNhOGY5ZTFjMTBmIiwidCI6ImEzNTAyNTAxLTE5NmUtNDQyYi04ZDk1LTMwYTU4ZGMxNTJhMyIsImMiOjR9" frameborder="0" allowFullScreen="true"></iframe>
+  </main>
+
+  <footer>
+    &copy; 2025 Heirs Help | En colaboración con <a href="https://www.lisc.org" class="text-blue-600 hover:underline">LISC.org</a>
+  </footer>
+</body>
+</html>
